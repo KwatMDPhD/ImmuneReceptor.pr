@@ -1,0 +1,7 @@
+name = "ImmuneReceptor"
+uuid = "596bd1cf-497f-4349-8f50-b25beac56f74"
+authors = ["KwatMDPhD"]
+version = "0.1.0"
+
+[deps]
+Nucleus = "cd814215-3b54-4e50-ac5e-8a2c7852bc16"
