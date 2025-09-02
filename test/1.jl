@@ -39,16 +39,6 @@ for fa in (
 
 end
 
-Nucleus.Plotly.writ(
-    joinpath(ImmuneReceptor.OU, "1.html"),
-    (Dict("type" => "histogram", "x" => map(lastindex, S3_)),),
-    Dict(
-        "title" => Dict("text" => "$(lastindex(unique(S3_))) unique CDR3s"),
-        "yaxis" => Dict("title" => Dict("text" => "Count")),
-        "xaxis" => Dict("title" => Dict("text" => "Number of amino acids in CDR3")),
-    ),
-)
-
 # ---- #
 
 const U1_ = unique(S1_)
@@ -68,7 +58,7 @@ for nd in eachindex(S1_)
 end
 
 Nucleus.HeatPlot.writ(
-    joinpath(ImmuneReceptor.OU, "2.html"),
+    joinpath(ImmuneReceptor.OU, "1.html"),
     U1_,
     U2_,
     I,
@@ -78,3 +68,33 @@ Nucleus.HeatPlot.writ(
         "xaxis" => Dict("title" => Dict("text" => "7 J gene")),
     ),
 )
+
+# ---- #
+
+Nucleus.Plotly.writ(
+    joinpath(ImmuneReceptor.OU, "2.html"),
+    (Dict("type" => "histogram", "x" => map(lastindex, S3_)),),
+    Dict(
+        "yaxis" => Dict("title" => Dict("text" => "Count")),
+        "xaxis" => Dict("title" => Dict("text" => "Number of amino acids in a CDR3")),
+    ),
+)
+
+# ---- #
+
+const UN_ = unique(S3_)
+
+# ---- #
+
+const HA_ = ImmuneReceptor.make(UN_)
+
+Nucleus.Plotly.writ(
+    joinpath(ImmuneReceptor.OU, "3.html"),
+    (Dict("type" => "histogram", "x" => HA_),),
+    Dict(
+        "yaxis" => Dict("title" => Dict("text" => "Count")),
+        "xaxis" => Dict("title" => Dict("text" => "Hamming distance between CDR3s")),
+    ),
+)
+
+# ---- #

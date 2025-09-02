@@ -5,3 +5,7 @@ version = "0.1.0"
 
 [deps]
 Nucleus = "cd814215-3b54-4e50-ac5e-8a2c7852bc16"
+ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
+
+[compat]
+ProgressMeter = "1.11.0"
