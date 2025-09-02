@@ -120,7 +120,7 @@ end
 # Motif
 # =============================================================================================== #
 
-function get_motif(c1, u1)
+function get_motif(c1::AbstractString, u1)
 
     mo_ = String[]
 
@@ -142,9 +142,7 @@ function get_motif(c1, u1)
 
 end
 
-function get_motif(cd_, u1, u2)
-
-    mo__ = map(cd -> get_motif(cd, u1), cd_)
+function get_motif(mo__, um)
 
     di = Dict{String, Vector{Int}}()
 
@@ -164,7 +162,7 @@ function get_motif(cd_, u1, u2)
 
     end
 
-    [st for (st, in_) in di if u2 <= lastindex(in_)]
+    [st for (st, in_) in di if um <= lastindex(in_)]
 
 end
 

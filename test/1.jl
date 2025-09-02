@@ -1,3 +1,5 @@
+using Random: seed!
+
 using Nucleus
 
 using ImmuneReceptor
@@ -110,10 +112,32 @@ Nucleus.Plotly.writ(
 
 # ---- #
 
-const M1_ = ImmuneReceptor.get_motif(C1_, 2, 3)
+seed!(20250902)
 
-const M2_ = ImmuneReceptor.get_motif(C2_, 2, 3)
+# TODO: Use 1000
+# TODO: Match length
+const CD__ = map(_ -> rand(U1_, lastindex(U2_)), 1:1000)
 
 # ---- #
 
+const MO__ = map(cd -> ImmuneReceptor.get_motif(cd, 2), U2_)
 
+const M2_ = reduce(vcat, MO__)
+
+const O2_ = ImmuneReceptor.get_motif(MO__, 3)
+
+# ---- #
+
+for mo in O2_
+
+    um = count(==(mo), M2_)
+
+    um_ = map(CD__) do cd_
+
+        count(==(mo), reduce(vcat, map(cd -> ImmuneReceptor.get_motif(cd, 2), cd_)))
+
+    end
+
+    @info um um_ count(>=(um), um_) / lastindex(CD__)
+
+end
