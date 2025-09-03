@@ -13,7 +13,7 @@ using ProgressMeter: @showprogress
 using Nucleus
 
 # =============================================================================================== #
-# Read
+# Reading
 # =============================================================================================== #
 
 function is_t_gene(st::AbstractString)
@@ -35,44 +35,52 @@ function is_cdr3(st)
 end
 
 # =============================================================================================== #
+# Write
+# =============================================================================================== #
+
+function writ(ht, st, n1_, n2_)
+
+    Nucleus.Plotly.writ(
+        ht,
+        (
+            Dict(
+                "name" => "Naive",
+                "type" => "histogram",
+                "x" => rand(n1_, lastindex(n2_)),
+            ),
+            Dict("name" => "Experienced", "type" => "histogram", "x" => n2_),
+        ),
+        Dict(
+            "yaxis" => Dict("title" => Dict("text" => "Count")),
+            "xaxis" => Dict("title" => Dict("text" => st)),
+        ),
+    )
+
+end
+
+# =============================================================================================== #
 # VJ
 # =============================================================================================== #
 
-function make_vj(vg_, jg_)
+function make_vj(s1_, s2_)
 
-    u1_ = unique(vg_)
+    u1_ = unique(s1_)
 
-    u2_ = unique(jg_)
+    u2_ = unique(s2_)
 
-    d1 = Dict(un => nd for (nd, un) in enumerate(u1_))
+    d1 = Dict(u1_[nd] => nd for nd in eachindex(u1_))
 
-    d2 = Dict(un => nd for (nd, un) in enumerate(u2_))
+    d2 = Dict(u2_[nd] => nd for nd in eachindex(u2_))
 
     U = zeros(Int, lastindex(u1_), lastindex(u2_))
 
-    for nd in eachindex(vg_)
+    for nd in eachindex(s1_)
 
-        U[d1[vg_[nd]], d2[jg_[nd]]] += 1
+        U[d1[s1_[nd]], d2[s2_[nd]]] += 1
 
     end
 
     u1_, u2_, U
-
-end
-
-function write_vj(ht, vg_, jg_, U)
-
-    Nucleus.HeatPlot.writ(
-        ht,
-        vg_,
-        jg_,
-        U,
-        Dict(
-            # TODO: Size
-            "yaxis" => Dict("title" => Dict("text" => "V gene")),
-            "xaxis" => Dict("title" => Dict("text" => "J gene")),
-        ),
-    )
 
 end
 
@@ -82,11 +90,7 @@ end
 
 function make_hamming_distance(s1, s2)
 
-    sum(c1 != c2 for (c1, c2) in zip(s1, s2))
-
-end
-
-function make_todo_distance(s1, s2)
+    sum(s1[nd] != s2[nd] for nd in eachindex(s1))
 
 end
 
@@ -120,43 +124,41 @@ end
 # Motif
 # =============================================================================================== #
 
-function get_motif(c1::AbstractString, u1)
+function get_motif(s1::AbstractString, u1)
 
-    mo_ = String[]
+    s2 = s1[4:(end - 3)]
 
-    c2 = c1[4:(end - 3)]
-
-    u2 = lastindex(c2)
+    st_ = String[]
 
     i1 = 0
 
     i2 = i1 + u1 - 1
 
-    while i2 < u2
+    while i2 < lastindex(s2)
 
-        push!(mo_, c2[(i1 += 1):(i2 += 1)])
+        push!(st_, s2[(i1 += 1):(i2 += 1)])
 
     end
 
-    mo_
+    st_
 
 end
 
-function get_motif(mo__, um)
+function get_motif(st__, um)
 
     di = Dict{String, Vector{Int}}()
 
-    for nd in eachindex(mo__)
+    for nd in eachindex(st__)
 
-        for mo in mo__[nd]
+        for st in st__[nd]
 
-            if !haskey(di, mo)
+            if !haskey(di, st)
 
-                di[mo] = Int[]
+                di[st] = Int[]
 
             end
 
-            push!(di[mo], nd)
+            push!(di[st], nd)
 
         end
 
