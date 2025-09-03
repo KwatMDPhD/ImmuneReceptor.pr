@@ -16,12 +16,14 @@ const J1_ = String[]
 
 const C1_ = String[]
 
-for fa in (joinpath(ImmuneReceptor.IN, "gliph", "db", fa) for fa in (
-    #"rubelt-naive-CD4.fa",
-    #"rubelt-naive-CD8.fa",
-    #"tcrab-naive-refdb.fa",
-    "warren-naive.fa",
-))
+for fa in (
+    joinpath(ImmuneReceptor.IN, "gliph", "db", fa) for fa in (
+        "rubelt-naive-CD4.fa",
+        "rubelt-naive-CD8.fa",
+        "tcrab-naive-refdb.fa",
+        "warren-naive.fa",
+    )
+)
 
     for s1 in eachsplit(read(fa, String), '>'; keepempty = false)
 
@@ -96,22 +98,43 @@ const U2_ = unique(C2_)
 
 seed!(20250902)
 
-const UM = 100
+const UM = 1000
 
 const CD__ = map(_ -> rand(U1_, lastindex(U2_)), 1:UM)
 
 # ---- #
 
-const D1_ = ImmuneReceptor.make_distance(U1_)
+const _, D1_ = ImmuneReceptor.make_distance(U1_)
 
-const D2_ = ImmuneReceptor.make_distance(U2_)
+const IN__, D2_ = ImmuneReceptor.make_distance(U2_)
 
 # ---- #
 
 ImmuneReceptor.writ(joinpath(ImmuneReceptor.OU, "distance.html"), "Distance", D1_, D2_)
 
 # ---- #
-# TODO: Group by distance
+
+const E1_ = Tuple{Int, Int}[]
+
+for nd in eachindex(IN__)
+
+    di = D2_[nd]
+
+    if 1 < di
+
+        continue
+
+    end
+
+    in_ = IN__[nd]
+
+    push!(E1_, in_)
+
+    @info "$(U2_[in_[1]]) -$di- $(U2_[in_[2]])"
+
+end
+
+@info "Sequence edge" E1_
 
 # ---- #
 
@@ -140,7 +163,7 @@ const PV_ = Float64[]
 
     p2 = iszero(p1) ? 1 / UM : p1
 
-    if p2 <= 0.05
+    if p2 <= 0.01
 
         push!(M3_, st)
 
@@ -164,3 +187,25 @@ Nucleus.Plotly.writ(
 )
 
 # ---- #
+
+const E2_ = Tuple{Int, Int}[]
+
+@showprogress for i1 in 1:lastindex(U2_), i2 in i1:lastindex(U2_)
+
+    s1_ = MO__[i1]
+
+    s2_ = MO__[i2]
+
+    for st in M3_
+
+        if st in s1_ && st in s2_
+
+            push!(E2_, (i1, i2))
+
+        end
+
+    end
+
+end
+
+@info "Motif edge" E2_

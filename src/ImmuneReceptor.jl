@@ -110,13 +110,17 @@ end
 
 function make_distance(st_)
 
-    um = lastindex(st_)
+    u1 = lastindex(st_)
 
-    di_ = Vector{Int}(undef, div(um * (um - 1), 2))
+    u2 = div(u1 * (u1 - 1), 2)
+
+    in__ = Vector{Tuple{Int, Int}}(undef, u2)
+
+    di_ = Vector{Int}(undef, u2)
 
     i1 = 0
 
-    @showprogress for i2 in 1:um, i3 in (i2 + 1):um
+    @showprogress for i2 in 1:u1, i3 in (i2 + 1):u1
 
         s1 = st_[i2]
 
@@ -124,13 +128,15 @@ function make_distance(st_)
 
         if lastindex(s1) == lastindex(s2)
 
-            di_[i1 += 1] = make_hamming_distance(s1, s2)
+            in__[i1 += 1] = (i2, i3)
+
+            di_[i1] = make_hamming_distance(s1, s2)
 
         end
 
     end
 
-    resize!(di_, i1)
+    resize!(in__, i1), resize!(di_, i1)
 
 end
 
@@ -142,6 +148,7 @@ function get_motif(s1::AbstractString, um)
 
     s2 = s1[4:(end - 3)]
 
+    # TODO: Use Set
     st_ = String[]
 
     i1 = 0
