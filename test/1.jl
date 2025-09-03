@@ -8,34 +8,34 @@ using ImmuneReceptor
 
 # ---- #
 
+# TODO: Preallocate
+
 const V1_ = String[]
 
 const J1_ = String[]
 
 const C1_ = String[]
 
-for fa in (
-    joinpath(ImmuneReceptor.IN, "gliph", "db", fa) for fa in (
-        "rubelt-naive-CD4.fa",
-        "rubelt-naive-CD8.fa",
-        "tcrab-naive-refdb.fa",
-        "warren-naive.fa",
-    )
-)
+for fa in (joinpath(ImmuneReceptor.IN, "gliph", "db", fa) for fa in (
+    #"rubelt-naive-CD4.fa",
+    #"rubelt-naive-CD8.fa",
+    #"tcrab-naive-refdb.fa",
+    "warren-naive.fa",
+))
 
     for s1 in eachsplit(read(fa, String), '>'; keepempty = false)
 
         s2, s3 = split(s1, '\n')
 
-        s4, s5, _ = split(s2, ','; limit = 3)
-
         @assert ImmuneReceptor.is_cdr3(s3)
+
+        push!(C1_, s3)
+
+        s4, s5, _ = split(s2, ','; limit = 3)
 
         push!(V1_, s4)
 
         push!(J1_, s5)
-
-        push!(C1_, s3)
 
     end
 
@@ -62,7 +62,7 @@ const V2_::Vector{String}, J2_::Vector{String}, C2_ = eachcol(
 # ---- #
 
 for (nd, (s1_, s2_, U)) in
-    ((1, ImmuneReceptor.make_vj(V1_, J1_)), (2, ImmuneReceptor.make_vj(V2_, J2_)))
+    ((1, ImmuneReceptor.make_vj(J1_, V1_)), (2, ImmuneReceptor.make_vj(J2_, V2_)))
 
     Nucleus.HeatPlot.writ(
         joinpath(ImmuneReceptor.OU, "$nd.vj.html"),
@@ -70,8 +70,8 @@ for (nd, (s1_, s2_, U)) in
         s2_,
         U,
         Dict(
-            "yaxis" => Dict("title" => Dict("text" => "V gene")),
-            "xaxis" => Dict("title" => Dict("text" => "J gene")),
+            "yaxis" => Dict("title" => Dict("text" => "J gene")),
+            "xaxis" => Dict("title" => Dict("text" => "V gene")),
         ),
     )
 
@@ -94,7 +94,14 @@ const U2_ = unique(C2_)
 
 # ---- #
 
-# TODO: Precompute
+seed!(20250902)
+
+const UM = 100
+
+const CD__ = map(_ -> rand(U1_, lastindex(U2_)), 1:UM)
+
+# ---- #
+
 const D1_ = ImmuneReceptor.make_distance(U1_)
 
 const D2_ = ImmuneReceptor.make_distance(U2_)
@@ -104,13 +111,7 @@ const D2_ = ImmuneReceptor.make_distance(U2_)
 ImmuneReceptor.writ(joinpath(ImmuneReceptor.OU, "distance.html"), "Distance", D1_, D2_)
 
 # ---- #
-
-seed!(20250902)
-
-const UM = 1000
-
-# TODO: Match length
-const CD__ = map(_ -> rand(U1_, lastindex(U2_)), 1:UM)
+# TODO: Group by distance
 
 # ---- #
 
@@ -120,78 +121,46 @@ const M1_ = reduce(vcat, MO__)
 
 const M2_ = ImmuneReceptor.get_motif(MO__, 3)
 
+# ---- #
+
 const M3_ = String[]
 
-# ---- #
+const PV_ = Float64[]
 
 @showprogress for st in M2_
 
     um = count(==(st), M1_)
 
-    @assert 3 <= um
+    um_ = map(
+        cd_ -> count(==(st), reduce(vcat, map(cd -> ImmuneReceptor.get_motif(cd, 2), cd_))),
+        CD__,
+    )
 
-    um_ = map(CD__) do cd_
+    p1 = count(>=(um), um_) / UM
 
-        count(==(st), reduce(vcat, map(cd -> ImmuneReceptor.get_motif(cd, 2), cd_)))
+    p2 = iszero(p1) ? 1 / UM : p1
 
-    end
-
-    pv = count(>=(um), um_) / UM
-
-    if (iszero(pv) ? 1 / UM : pv) <= 0.01
+    if p2 <= 0.05
 
         push!(M3_, st)
+
+        push!(PV_, p2)
 
     end
 
 end
-
-@info "" M3_
 
 # ---- #
 
-@showprogress for cd_ in CD__
+const IN_ = sortperm(PV_)
 
-    di = Dict{String, Int}()
+Nucleus.Plotly.writ(
+    joinpath(ImmuneReceptor.OU, "motif.html"),
+    (Dict("type" => "bar", "x" => M3_[IN_], "y" => PV_[IN_]),),
+    Dict(
+        "yaxis" => Dict("title" => Dict("text" => "P-value")),
+        "xaxis" => Dict("title" => Dict("text" => "Motif")),
+    ),
+)
 
-    for st_ in map(cd -> ImmuneReceptor.get_motif(cd, 2), cd_)
-
-        for st in st_
-
-            if !haskey(di, st)
-
-                di[st] = 0
-
-            end
-
-            di[st] += 1
-
-        end
-
-    end
-
-    # TODO: Track di
-
-end
-
-for st in M2_
-
-    pv = if haskey(di, st)
-
-        1 / UM
-
-    else
-
-        di[st] / UM
-
-    end
-
-    if (iszero(pv) ? 1 / UM : pv) <= 0.01
-
-        push!(M3_, st)
-
-    end
-
-end
-
-@info "" M3_
+# ---- #

@@ -16,27 +16,35 @@ using Nucleus
 # Reading
 # =============================================================================================== #
 
-function is_t_gene(st::AbstractString)
-
-    startswith(st, 'T')
-
-end
-
 function is_t_gene(::Any)
 
     false
 
 end
 
+function is_t_gene(st::AbstractString)
+
+    startswith(st, 'T')
+
+end
+
 function is_cdr3(st)
 
-    st[1] === 'C' && st[end] === 'F'
+    st[1] == 'C' && st[end] == 'F'
 
 end
 
 # =============================================================================================== #
-# Write
+# Writing
 # =============================================================================================== #
+
+function ge(an_)
+
+    um = 1000000
+
+    lastindex(an_) <= um ? an_ : rand(an_, um)
+
+end
 
 function writ(ht, st, n1_, n2_)
 
@@ -46,12 +54,18 @@ function writ(ht, st, n1_, n2_)
             Dict(
                 "name" => "Naive",
                 "type" => "histogram",
-                "x" => rand(n1_, lastindex(n2_)),
+                "histnorm" => "probability",
+                "x" => ge(n1_),
             ),
-            Dict("name" => "Experienced", "type" => "histogram", "x" => n2_),
+            Dict(
+                "name" => "Experienced",
+                "type" => "histogram",
+                "histnorm" => "probability",
+                "x" => ge(n2_),
+            ),
         ),
         Dict(
-            "yaxis" => Dict("title" => Dict("text" => "Count")),
+            "yaxis" => Dict("title" => Dict("text" => "Probability")),
             "xaxis" => Dict("title" => Dict("text" => st)),
         ),
     )
@@ -124,7 +138,7 @@ end
 # Motif
 # =============================================================================================== #
 
-function get_motif(s1::AbstractString, u1)
+function get_motif(s1::AbstractString, um)
 
     s2 = s1[4:(end - 3)]
 
@@ -132,7 +146,7 @@ function get_motif(s1::AbstractString, u1)
 
     i1 = 0
 
-    i2 = i1 + u1 - 1
+    i2 = i1 + um - 1
 
     while i2 < lastindex(s2)
 
@@ -144,27 +158,23 @@ function get_motif(s1::AbstractString, u1)
 
 end
 
-function get_motif(st__, um)
+function get_motif(st__, u1)
 
-    di = Dict{String, Vector{Int}}()
+    di = Dict{String, Int}()
 
-    for nd in eachindex(st__)
+    for nd in eachindex(st__), st in st__[nd]
 
-        for st in st__[nd]
+        if !haskey(di, st)
 
-            if !haskey(di, st)
-
-                di[st] = Int[]
-
-            end
-
-            push!(di[st], nd)
+            di[st] = 0
 
         end
 
+        di[st] += 1
+
     end
 
-    [st for (st, in_) in di if um <= lastindex(in_)]
+    [st for (st, u2) in di if u1 <= u2]
 
 end
 
