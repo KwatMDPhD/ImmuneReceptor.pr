@@ -170,28 +170,28 @@ end
 
     end
 
-  # TODO: Track di
+    # TODO: Track di
 
 end
 
-  for st in M2_
+for st in M2_
 
-      pv = if haskey(di, st)
+    pv = if haskey(di, st)
 
-          1 / UM
+        1 / UM
 
-      else
+    else
 
-          di[st] / UM
+        di[st] / UM
 
-      end
+    end
 
-      if (iszero(pv) ? 1 / UM : pv) <= 0.01
+    if (iszero(pv) ? 1 / UM : pv) <= 0.01
 
-          push!(M3_, st)
+        push!(M3_, st)
 
-      end
+    end
 
-  end
+end
 
 @info "" M3_
