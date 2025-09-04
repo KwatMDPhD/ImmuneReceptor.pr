@@ -1,3 +1,7 @@
+using Graphs: SimpleGraph, edges, ne, nv, vertices
+
+using MetaGraphsNext: MetaGraph, edge_labels, labels
+
 using ProgressMeter: @showprogress
 
 using Random: seed!
@@ -16,14 +20,12 @@ const J1_ = String[]
 
 const C1_ = String[]
 
-for fa in (
-    joinpath(ImmuneReceptor.IN, "gliph", "db", fa) for fa in (
-        "rubelt-naive-CD4.fa",
-        "rubelt-naive-CD8.fa",
-        "tcrab-naive-refdb.fa",
-        "warren-naive.fa",
-    )
-)
+for fa in (joinpath(ImmuneReceptor.IN, "gliph", "db", fa) for fa in (
+    #"rubelt-naive-CD4.fa",
+    #"rubelt-naive-CD8.fa",
+    #"tcrab-naive-refdb.fa",
+    "warren-naive.fa",
+))
 
     for s1 in eachsplit(read(fa, String), '>'; keepempty = false)
 
@@ -94,27 +96,41 @@ const U1_ = unique(C1_)
 
 const U2_ = unique(C2_)
 
+const U1 = lastindex(U2_)
+
+# ---- #
+
+const GR = MetaGraph(SimpleGraph(), String, Nothing, Symbol)
+
+for st in U2_
+
+    GR[st] = nothing
+
+end
+
+nv(GR)
+
+ne(GR)
+
 # ---- #
 
 seed!(20250902)
 
-const UM = 1000
+const U2 = 100
 
-const CD__ = map(_ -> rand(U1_, lastindex(U2_)), 1:UM)
+const CD__ = map(_ -> rand(U1_, U1), 1:U2)
 
 # ---- #
 
-const _, D1_ = ImmuneReceptor.make_distance(U1_)
+#const _, D1_ = ImmuneReceptor.make_distance(U1_)
 
 const IN__, D2_ = ImmuneReceptor.make_distance(U2_)
 
 # ---- #
 
-ImmuneReceptor.writ(joinpath(ImmuneReceptor.OU, "distance.html"), "Distance", D1_, D2_)
+#ImmuneReceptor.writ(joinpath(ImmuneReceptor.OU, "distance.html"), "Distance", D1_, D2_)
 
 # ---- #
-
-const E1_ = Tuple{Int, Int}[]
 
 for nd in eachindex(IN__)
 
@@ -126,19 +142,21 @@ for nd in eachindex(IN__)
 
     end
 
-    in_ = IN__[nd]
+    i1, i2 = IN__[nd]
 
-    push!(E1_, in_)
-
-    @info "$(U2_[in_[1]]) -$di- $(U2_[in_[2]])"
+    GR[U2_[i1], U2_[i2]] = :Distance
 
 end
 
-@info "Sequence edge" E1_
+ne(GR)
 
 # ---- #
 
-const MO__ = map(cd -> ImmuneReceptor.get_motif(cd, 2), U2_)
+const U3 = 2
+
+# ---- #
+
+const MO__ = map(cd -> ImmuneReceptor.get_motif(cd, U3), U2_)
 
 const M1_ = reduce(vcat, MO__)
 
@@ -155,13 +173,16 @@ const PV_ = Float64[]
     um = count(==(st), M1_)
 
     um_ = map(
-        cd_ -> count(==(st), reduce(vcat, map(cd -> ImmuneReceptor.get_motif(cd, 2), cd_))),
+        cd_ -> count(
+            ==(st),
+            reduce(vcat, map(cd -> ImmuneReceptor.get_motif(cd, U3), cd_)),
+        ),
         CD__,
     )
 
-    p1 = count(>=(um), um_) / UM
+    p1 = count(>=(um), um_) / U2
 
-    p2 = iszero(p1) ? 1 / UM : p1
+    p2 = iszero(p1) ? 1 / U2 : p1
 
     if p2 <= 0.01
 
@@ -188,9 +209,7 @@ Nucleus.Plotly.writ(
 
 # ---- #
 
-const E2_ = Tuple{Int, Int}[]
-
-@showprogress for i1 in 1:lastindex(U2_), i2 in i1:lastindex(U2_)
+@showprogress for i1 in 1:U1, i2 in i1:U1
 
     s1_ = MO__[i1]
 
@@ -200,7 +219,7 @@ const E2_ = Tuple{Int, Int}[]
 
         if st in s1_ && st in s2_
 
-            push!(E2_, (i1, i2))
+            GR[U2_[i1], U2_[i2]] = :Motif
 
         end
 
@@ -208,4 +227,18 @@ const E2_ = Tuple{Int, Int}[]
 
 end
 
-@info "Motif edge" E2_
+ne(GR)
+
+# ---- #
+
+collect(vertices(GR))
+
+collect(labels(GR))
+
+collect(edges(GR))
+
+collect(edge_labels(GR))
+
+using MetaGraphsNext
+using Graphs
+subgraphs(GR)

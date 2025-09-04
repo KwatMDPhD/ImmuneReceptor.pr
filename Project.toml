@@ -4,10 +4,14 @@ authors = ["KwatMDPhD"]
 version = "0.1.0"
 
 [deps]
+Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
+MetaGraphsNext = "fa8bd995-216d-47f1-8a91-f3b68fbeb377"
 Nucleus = "cd814215-3b54-4e50-ac5e-8a2c7852bc16"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
+Graphs = "1.13.1"
+MetaGraphsNext = "0.7.4"
 ProgressMeter = "1.11.0"
 Random = "1.11.0"
