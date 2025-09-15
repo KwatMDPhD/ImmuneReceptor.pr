@@ -1,4 +1,4 @@
-using Graphs: SimpleGraph, edges, ne, nv, vertices
+using Graphs: SimpleGraph, edges, induced_subgraph, ne, nv, vertices
 
 using MetaGraphsNext: MetaGraph, edge_labels, labels
 
@@ -20,12 +20,14 @@ const J1_ = String[]
 
 const C1_ = String[]
 
-for fa in (joinpath(ImmuneReceptor.IN, "gliph", "db", fa) for fa in (
-    #"rubelt-naive-CD4.fa",
-    #"rubelt-naive-CD8.fa",
-    #"tcrab-naive-refdb.fa",
-    "warren-naive.fa",
-))
+for fa in (
+    joinpath(ImmuneReceptor.IN, "gliph1", "gliph", "db", fa) for fa in (
+        #"rubelt-naive-CD4.fa",
+        #"rubelt-naive-CD8.fa",
+        #"tcrab-naive-refdb.fa",
+        "warren-naive.fa",
+    )
+)
 
     for s1 in eachsplit(read(fa, String), '>'; keepempty = false)
 
@@ -54,7 +56,11 @@ const V2_::Vector{String}, J2_::Vector{String}, C2_ = eachcol(
                 ImmuneReceptor.is_t_gene(an_[2]) &&
                 ImmuneReceptor.is_cdr3(an_[3]),
         Nucleus.Table.rea(
-            joinpath(ImmuneReceptor.IN, "su", "41586_2017_BFnature22976_MOESM2_ESM.xlsx"),
+            joinpath(
+                ImmuneReceptor.IN,
+                "gliph1.su",
+                "41586_2017_BFnature22976_MOESM2_ESM.xlsx",
+            ),
             "Raw",
         )[
             !,
@@ -122,13 +128,15 @@ const CD__ = map(_ -> rand(U1_, U1), 1:U2)
 
 # ---- #
 
-#const _, D1_ = ImmuneReceptor.make_distance(U1_)
+# TODO: Comment out
+const _, D1_ = ImmuneReceptor.make_distance(U1_)
 
 const IN__, D2_ = ImmuneReceptor.make_distance(U2_)
 
 # ---- #
 
-#ImmuneReceptor.writ(joinpath(ImmuneReceptor.OU, "distance.html"), "Distance", D1_, D2_)
+# TODO: Comment out
+ImmuneReceptor.writ(joinpath(ImmuneReceptor.OU, "distance.html"), "Distance", D1_, D2_)
 
 # ---- #
 
@@ -239,6 +247,4 @@ collect(edges(GR))
 
 collect(edge_labels(GR))
 
-using MetaGraphsNext
-using Graphs
-subgraphs(GR)
+induced_subgraph(GR)

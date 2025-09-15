@@ -38,32 +38,24 @@ end
 # Writing
 # =============================================================================================== #
 
-function ge(an_)
+function make_trace(an_)
 
     um = 1000000
 
-    lastindex(an_) <= um ? an_ : rand(an_, um)
+    Dict(
+        "name" => "Naive",
+        "type" => "histogram",
+        "histnorm" => "probability",
+        "x" => lastindex(an_) <= um ? an_ : rand(an_, um),
+    )
 
 end
 
-function writ(ht, st, n1_, n2_)
+function writ(ht, st, a1_, a2_)
 
     Nucleus.Plotly.writ(
         ht,
-        (
-            Dict(
-                "name" => "Naive",
-                "type" => "histogram",
-                "histnorm" => "probability",
-                "x" => ge(n1_),
-            ),
-            Dict(
-                "name" => "Experienced",
-                "type" => "histogram",
-                "histnorm" => "probability",
-                "x" => ge(n2_),
-            ),
-        ),
+        (make_trace(a1_), make_trace(a2_)),
         Dict(
             "yaxis" => Dict("title" => Dict("text" => "Probability")),
             "xaxis" => Dict("title" => Dict("text" => st)),
@@ -76,17 +68,23 @@ end
 # VJ
 # =============================================================================================== #
 
+function make_dictionary(an_)
+
+    Dict(an_[nd] => nd for nd in eachindex(an_))
+
+end
+
 function make_vj(s1_, s2_)
 
     u1_ = unique(s1_)
 
     u2_ = unique(s2_)
 
-    d1 = Dict(u1_[nd] => nd for nd in eachindex(u1_))
-
-    d2 = Dict(u2_[nd] => nd for nd in eachindex(u2_))
-
     U = zeros(Int, lastindex(u1_), lastindex(u2_))
+
+    d1 = make_dictionary(u1_)
+
+    d2 = make_dictionary(u2_)
 
     for nd in eachindex(s1_)
 
@@ -116,7 +114,7 @@ function make_distance(st_)
 
     in__ = Vector{Tuple{Int, Int}}(undef, u2)
 
-    di_ = Vector{Int}(undef, u2)
+    po_ = Vector{Int}(undef, u2)
 
     i1 = 0
 
@@ -126,17 +124,19 @@ function make_distance(st_)
 
         s2 = st_[i3]
 
-        if lastindex(s1) == lastindex(s2)
+        if lastindex(s1) != lastindex(s2)
 
-            in__[i1 += 1] = (i2, i3)
-
-            di_[i1] = make_hamming_distance(s1, s2)
+            continue
 
         end
 
+        in__[i1 += 1] = i2, i3
+
+        po_[i1] = make_hamming_distance(s1, s2)
+
     end
 
-    resize!(in__, i1), resize!(di_, i1)
+    resize!(in__, i1), resize!(po_, i1)
 
 end
 
