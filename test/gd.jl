@@ -17,28 +17,23 @@ using StatsBase
 # calculate distribtuion of lengths for CDR3s ✅
 # maybe make symbol/AA utilization plot for CDR3s?
 
-# load datasets (concatenate)
-
-#mixed_data = readdlm("GSM6470059_PNT3_filtered_contig_annotations_copy.csv", ',', Any)
-
+# load datasets (load just one for now to test)
 df = CSV.read("/Users/dr/Downloads/GSM6470059_PNT3_filtered_contig_annotations.csv.csv", DataFrame)
 
 # remove any rows that don't have TRG or TRD value in "chain" column or without a value in the CDR3 column
 
-filtered_df = df[((df.chain.=="TRG").|(df.chain.=="TRD")).&(df.cdr3.!="none"), :]
+filtered_df = df[((df.chain.=="TRG").|(df.chain.=="TRD")).&(df.cdr3.!="None"), :]
 
 # count incidence of every unique value in TRJ, TRV or TRD column.
 
 df_G = filter(:chain => ==("TRG"), filtered_df)
 df_G = filter(:v_gene => !=("None"), df_G)
 df_G = filter(:j_gene => !=("None"), df_G)
-df_G = filter(:cdr3 => !=("None"), df_G)
 
 df_D = filter(:chain => ==("TRD"), filtered_df)
 df_D = filter(:v_gene => !=("None"), df_D)
 df_D = filter(:j_gene => !=("None"), df_D)
 df_D = filter(:d_gene => !=("None"), df_D)
-df_D = filter(:cdr3 => !=("None"), df_D)
 
 vgenes_G = proportionmap(df_G.v_gene)
 vgenes_D = proportionmap(df_D.v_gene)
@@ -71,7 +66,6 @@ p5 = bar(collect(keys(jgenes_D)), collect(values(jgenes_D));
     legend=false, xlabel="J Gene", ylabel="Frequency",
     title="δ-Chain J Gene Frequency")
 
-# Combine them into subplots (2 rows × 3 columns)
 plot(p1, p2, p3, p4, p5, layout=(2, 3))
 
 # count incidence of every unique length for unique CDR3s
@@ -87,9 +81,10 @@ p2_b = bar(collect(keys(lengths_G)), collect(values(lengths_G));
     legend=false, xlabel="CDR3 Length (in AA)", ylabel="Frequncy",
     title="γ-Chain CDR3 Lengths")
 
-plot(p1_b, p2_b, layout=(2, 1))
+plot(p1_b, p2_b)
 
 # make sequence logo for CDR3s (maybe center sequences)
+# TO DO: figure out how to make sequene logo with centered sequences
 
 function center_cdr3s(s::AbstractString, maximum_length::Int; padchar::Char='-')
     len = length(s)
