@@ -13,8 +13,8 @@ using StatsBase
 # TO-DO:
 # remove cells without TRG, TRD or CDR3 read ✅
 # grab TRJ, TRV, TRD and CDR3
-# calculate percent utilization for each V, D, and J gene for G and D chains.
-# calculate distribtuion of lengths for CDR3s
+# calculate percent utilization for each V, D, and J gene for G and D chains ✅
+# calculate distribtuion of lengths for CDR3s ✅
 # maybe make symbol/AA utilization plot for CDR3s?
 
 # load datasets (concatenate)
