@@ -175,9 +175,22 @@ function get_motif_new(st_::AbstractVector{<:AbstractString}, min::Int, max::Int
 
     end
 
+    for um in keys(mo_)
+        unique(mo_[um])
+    end
+
     return mo_
 
 end
+
+#function count_motif(listofstrings)
+# TO DO:
+# - for every motif -> count occurances of each motif through each mo_ motif length pool.
+# also note (make dictionary) length of the CDR3 AND index of each occurance of each motif in the string.
+# later, use this index + length to helo draw local edges (draw edge if length is same, motif is roughly in same position)
+#end
+
+
 
 #_________#
 
